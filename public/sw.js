@@ -6,7 +6,7 @@
  *   así que la app sigue contando y registrando movimientos sin conexión.
  * - Al cerrar sesión la app pide borrar todas las copias (mensaje "clear").
  */
-const VERSION = "rls-tools-v3";
+const VERSION = "rls-tools-v4";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 const PRECACHE = ["/offline.html", "/icons/icon-192.png"];
@@ -33,6 +33,19 @@ self.addEventListener("message", (event) => {
   if (event.data === "clear") {
     event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== STATIC_CACHE).map((k) => caches.delete(k)))));
   }
+});
+
+// Tocar una notificación abre (o enfoca) la app en la pantalla correspondiente
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const href = (event.notification.data && event.notification.data.href) || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      const win = wins.find((w) => new URL(w.url).origin === self.location.origin);
+      if (win) return win.focus().then(() => win.navigate(href));
+      return self.clients.openWindow(href);
+    }),
+  );
 });
 
 const PUBLIC = ["/login", "/actualizar", "/sin-acceso", "/adios"];

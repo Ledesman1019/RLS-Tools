@@ -8,6 +8,7 @@ import { logout, signOut } from "@/app/actions";
 import { useApp } from "@/components/app-provider";
 import { BrandMark } from "@/components/brand";
 import { Dialog } from "@/components/dialog";
+import { NotificationBell, NotificationWatcher } from "@/components/notifications";
 import { Button } from "@/components/ui";
 import { exitApp } from "@/lib/exit";
 import { canUse, locate } from "@/lib/menu";
@@ -40,6 +41,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-taskbar">
+      <NotificationWatcher />
       <TopBar back={back} title={title} />
       <main className={cn("relative flex-1 overflow-hidden", isMenu ? "desk-bg" : "bg-app")}>
         {isMenu && (
@@ -99,6 +101,7 @@ function TopBar({ back, title }: { back: string | null; title?: string }) {
         {!sync.online ? <CloudOff className="h-3.5 w-3.5" /> : sync.syncing ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Cloud className="h-3.5 w-3.5" />}
         {!sync.online ? "Offline" : sync.errors ? sync.errors : sync.pending || ""}
       </Link>
+      <NotificationBell />
       <div className="flex shrink-0 items-center gap-1.5 pl-1 text-right leading-tight">
         <span className="text-[10px] font-bold">
           {code}

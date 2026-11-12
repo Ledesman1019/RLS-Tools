@@ -2,13 +2,14 @@
 
 import { useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
-import { ChevronRight, Cloud, Database, ExternalLink, Smartphone, Store, Volume2 } from "lucide-react";
+import { Bell, ChevronRight, Cloud, Database, ExternalLink, Smartphone, Store, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { setBranch } from "@/app/actions";
 import { useApp } from "@/components/app-provider";
 import { InstallAppButton } from "@/components/pwa";
 import { Button, buttonClass, Card, Select } from "@/components/ui";
 import { useCatalog, useSync } from "@/lib/offline/hooks";
+import { enableSystemNotifications, notify, notifyPermission, subscribeNotify, systemNotificationsOn } from "@/lib/notify";
 import { playSound, setSoundEnabled, soundEnabled, subscribeSound } from "@/lib/sound";
 import { terminalId } from "@/lib/terminal";
 import { formatDateTime } from "@/lib/utils";
@@ -32,6 +33,8 @@ export function SettingsTool() {
   const { catalog, loading, refresh } = useCatalog(branch.id);
   const sync = useSync();
   const sound = useSyncExternalStore(subscribeSound, soundEnabled, () => true);
+  const notifications = useSyncExternalStore(subscribeNotify, systemNotificationsOn, () => false);
+  const permission = useSyncExternalStore(subscribeNotify, notifyPermission, () => "default" as const);
   const terminal = useSyncExternalStore(noop, terminalId, () => "");
   const [pending, start] = useTransition();
   const multi = (can("reportes", "view") || can("configuracion", "view")) && branches.length > 1;
@@ -87,6 +90,33 @@ export function SettingsTool() {
             }}
           />
         </label>
+        <label className="flex cursor-pointer items-center gap-3 px-3 py-3">
+          <Bell className="h-5 w-5 text-slate-500" />
+          <span className="flex-1 text-sm text-slate-700">
+            Notificaciones del celular
+            <span className="block text-xs text-slate-500">
+              {permission === "unsupported"
+                ? "Este navegador no las permite: instala la app para recibirlas"
+                : permission === "denied"
+                  ? "Bloqueadas: actívalas en los permisos del navegador para este sitio"
+                  : "Transferencias que llegan, O/C por recibir, aprobaciones y errores de envío"}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            className="h-5 w-5 accent-brand-600"
+            checked={notifications}
+            disabled={permission === "unsupported" || permission === "denied"}
+            onChange={(e) =>
+              void enableSystemNotifications(e.target.checked).then((on) => {
+                if (on) void notify({ title: "Notificaciones activadas", body: "Te avisaremos lo que llegue a tu tienda", tone: "success" });
+              })
+            }
+          />
+        </label>
+        <button type="button" onClick={() => void notify({ title: "Prueba de aviso", body: "Así suenan las notificaciones de RLS Tools" })} className="flex w-full cursor-pointer items-center gap-3 px-3 py-3 text-left text-sm text-link active:bg-slate-50">
+          <Volume2 className="h-5 w-5" /> Probar sonido y aviso
+        </button>
         <div className="flex items-center gap-3 px-3 py-3">
           <Database className="h-5 w-5 text-slate-500" />
           <span className="flex-1 text-sm text-slate-700">

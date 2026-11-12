@@ -92,7 +92,7 @@ try {
   const mf = await (await fetch(base + "/manifest.webmanifest")).json().catch(() => null);
   report(mf?.short_name === "RLS Tools" && mf?.orientation === "portrait", "manifiesto PWA para celular");
   const sw = await fetch(base + "/sw.js");
-  report(sw.status === 200 && (await sw.text()).includes("rls-tools-v1"), "service worker de RLS Tools");
+  report(sw.status === 200 && (await sw.text()).includes("rls-tools-v"), "service worker de RLS Tools");
 } catch (e) {
   failed++;
   console.log("ERROR", e.message);

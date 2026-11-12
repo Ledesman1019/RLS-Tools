@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useApp } from "@/components/app-provider";
-import { BrandMark } from "@/components/brand";
+import { BrandLogo } from "@/components/brand";
 import { toolsFor } from "@/lib/menu";
 
 /** Inicio: las herramientas que permite el rol, en mosaicos grandes para el pulgar. */
@@ -11,12 +11,9 @@ export default function HomePage() {
   const tools = toolsFor(profile.role, permissions);
   return (
     <div className="px-3 pb-6 pt-[max(1rem,env(safe-area-inset-top))] text-white">
-      <div className="mb-5 flex items-center gap-3">
-        <BrandMark className="h-11 w-11 rounded-2xl p-1" />
-        <div className="min-w-0 leading-tight">
-          <p className="text-xl font-black tracking-tight">RLS Tools</p>
-          <p className="truncate text-xs font-semibold text-white/80">Almacén · {branch.name}</p>
-        </div>
+      <div className="mb-5 flex items-end justify-between gap-3">
+        <BrandLogo className="w-44 drop-shadow-[0_6px_18px_rgb(0_0_0/0.35)]" />
+        <p className="truncate pb-1 text-right text-xs font-semibold text-white/85">{branch.name}</p>
       </div>
       <div className="grid grid-cols-2 gap-2.5">
         {tools.map((t) => (

@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasSupabaseEnv, SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 
-const PUBLIC_PATHS = ["/login", "/actualizar", "/sin-acceso"];
+const PUBLIC_PATHS = ["/login", "/actualizar", "/sin-acceso", "/adios"];
 
 /**
  * Refresca la sesión de Supabase y hace la redirección optimista de

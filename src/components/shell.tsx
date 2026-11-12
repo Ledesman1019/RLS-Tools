@@ -3,14 +3,15 @@
 import { useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Building2, Cloud, CloudOff, Lock, LogOut, RefreshCw, UserRound } from "lucide-react";
-import { logout, setBranch } from "@/app/actions";
+import { ArrowLeft, Building2, Cloud, CloudOff, Lock, LogOut, Power, RefreshCw, UserRound } from "lucide-react";
+import { logout, setBranch, signOut } from "@/app/actions";
 import { useApp } from "@/components/app-provider";
 import { Dialog, DialogFooter } from "@/components/dialog";
 import { Button } from "@/components/ui";
 import { toolFor } from "@/lib/menu";
 import { useSync } from "@/lib/offline/hooks";
 import { clearAll } from "@/lib/offline/store";
+import { exitApp } from "@/lib/exit";
 import { cn } from "@/lib/utils";
 
 /** Marco móvil: pantalla, botón «Atrás» y barra inferior con perfil y sincronización. */
@@ -141,11 +142,24 @@ function BottomBar() {
             <Button variant="secondary" onClick={() => setOpen(false)}>
               Volver
             </Button>
-            <Button type="submit" variant="danger">
+            <Button type="submit" variant="secondary">
               <LogOut className="h-4 w-4" /> Cerrar sesión
             </Button>
           </DialogFooter>
         </form>
+        <Button
+          variant="danger"
+          className="mt-3 h-11 w-full"
+          onClick={async () => {
+            if (sync.pending > 0 && !confirm("Hay operaciones sin enviar al ERP. ¿Salir de todas formas y descartarlas?")) return;
+            await clearAll().catch(() => {});
+            navigator.serviceWorker?.controller?.postMessage("clear");
+            await signOut();
+            exitApp();
+          }}
+        >
+          <Power className="h-4 w-4" /> Salir de la aplicación
+        </Button>
       </Dialog>
     </footer>
   );

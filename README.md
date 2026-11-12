@@ -6,16 +6,28 @@ Usa **la misma base de datos del ERP**, con los mismos usuarios, roles, permisos
 
 ## Herramientas
 
-| N.º | Herramienta | Qué hace | Permiso de Inventario |
-|---|---|---|---|
-| 01 | **Inventario con pistola** | Escaneo de códigos de barras y QR (pistola o cámara), +1 por lectura o con cantidad, validación contra el catálogo, códigos no registrados en rojo (se reportan), cambio de ubicación escaneando su etiqueta | Crear |
-| 02 | **Inventario físico** | Sesiones por zona, con **conteo ciego** y **conteo completo**. Compara lo contado contra el stock del ERP al cerrar, muestra sobrantes y faltantes, y permite cerrar, enviar, aplicar o anular | Ver o Crear (aplicar: Editar) |
-| 03 | **Consulta rápida** | Por código o nombre: descripción, SKU, stock, precio, unidad y presentación, ubicación, stock en otras sucursales y lotes por vencer | Ver |
-| 04 | **Movimientos de almacén** | Entradas, salidas (con motivo), transferencias entre sucursales y cambios de ubicación, validados escaneando | Editar |
-| 05 | **Reportes y diferencias** | Inventarios realizados, productos contados, faltantes, sobrantes, diferencia valorizada al costo e historial de operaciones (exportables a CSV) | Ver |
-| 06 | **Sincronización con HANA4** | Estado de la señal, operaciones pendientes, las rechazadas por el ERP (con su motivo, para reintentar o descartar), catálogo recibido e historial enviado | Todos |
+La pantalla de inicio agrupa las herramientas en secciones, como un terminal de tienda: **Inventarios, Ventas, Transferencias, Recibos y Otros**. Arriba aparecen el código del usuario y el número de terminal; abajo, **Configuración** y **Cerrar Sesión**.
 
-Cada rol ve solo las herramientas que su permiso de Inventario permite: el Almacenero las ve todas, el Comprador solo consulta y reportes, y el Cajero no entra. Los permisos se gestionan en el ERP (**General → Configuración → Roles y permisos**) y la base de datos los vuelve a exigir en cada operación.
+| Sección | Herramienta | Qué hace | Permiso del ERP |
+|---|---|---|---|
+| Inventarios | **Búsqueda de Inventario** | Por código o nombre: stock, precio, ubicación, stock en otras tiendas y lotes por vencer | Inventario: ver |
+| | **Inventario Físico** | Sesiones por zona con conteo ciego o completo; al cerrar muestra sobrantes y faltantes, y permite enviar, aplicar o anular | Inventario: ver o crear (aplicar: editar) |
+| | **Inventario con Pistola** | +1 por lectura o con cantidad; valida contra el catálogo; cambia de ubicación escaneando su etiqueta | Inventario: crear |
+| | **Tiendas** | Resumen de cada tienda (con stock, por reponer, agotados) y stock de un producto en todas | Inventario: ver |
+| Ventas | **Nueva Venta** | Cobra desde el celular con la caja abierta del usuario: boleta, factura o ticket; efectivo, tarjeta, Yape o Plin | Ventas: crear y Caja: crear |
+| | **Nueva Orden** | Cotización (orden de venta) que el cajero cobra en el ERP; la comisión es del vendedor | Ventas: crear |
+| | **Autorizaciones** | Aprueba o rechaza las solicitudes de pedido pendientes de la tienda | Compras: editar |
+| Transferencias | **Nueva Transferencia** | La mercadería sale de esta tienda y queda **en tránsito** | Inventario: editar |
+| | **Recibir Transferencia** | Escanea lo que llegó; la diferencia se registra como merma o sobrante | Inventario: editar |
+| Recibos | **Recibir O/C** | Búsqueda de órdenes de compra (número, proveedor, fecha, estado); verifica escaneando, pide lote y vencimiento cuando corresponde y la recibe en el ERP | Compras: ver e Inventario: editar |
+| | **Retorno a Proveedor** | Devuelve mercadería: sale del stock y queda como reclamo (cuenta 1673) hasta la nota de crédito | Inventario: editar y Compras: ver |
+| Otros | **Movimientos de Almacén** | Entradas, salidas, transferencias directas y cambios de ubicación | Inventario: editar |
+| | **Reportes y Diferencias** | Inventarios realizados, faltantes, sobrantes, diferencia valorizada e historial (CSV) | Inventario: ver |
+| | **Sincronización con HANA4** | Señal, operaciones pendientes, rechazadas (con su motivo) e historial | Todos |
+
+Cada rol ve solo las secciones y herramientas que sus permisos del ERP permiten: el Almacenero ve Inventarios, Transferencias y Recibos; el Cajero, Ventas; el Vendedor, Nueva Orden; el Comprador, Autorizaciones y consultas. Quien no tiene ninguna herramienta no entra. Los permisos se gestionan en el ERP (**General → Configuración → Roles y permisos**) y la base de datos los vuelve a exigir en cada operación.
+
+Ventas, órdenes, autorizaciones y recepción de O/C necesitan señal (el ERP valida stock, precio, caja y lotes al momento). Inventarios, movimientos, transferencias y retornos funcionan sin señal mediante la cola.
 
 ## Cómo funciona sin señal
 
@@ -28,12 +40,12 @@ Cada rol ve solo las herramientas que su permiso de Inventario permite: el Almac
 
 ## Instalación
 
-1. **Base de datos:** ejecuta en Supabase la migración del ERP `erp/supabase/migrations/0010_rls_tools.sql` (SQL Editor → pegar → Run). Agrega ubicaciones, sesiones de inventario, la bitácora móvil y sus funciones, y es compatible con lo que ya funciona.
+1. **Base de datos:** ejecuta en Supabase, en orden, las migraciones del ERP `erp/supabase/migrations/0010_rls_tools.sql` (ubicaciones, inventarios y bitácora móvil) y `0011_transferencias_retornos.sql` (transferencias en tránsito y retornos a proveedor). SQL Editor → pegar → Run. Son compatibles con lo que ya funciona.
 2. **Variables:** copia `.env.example` como `.env.local` con **los mismos valores del ERP** (URL y clave publicable de Supabase). No necesita la clave de servicio.
 3. **Local:** `npm install` y `npm run dev`. Para probar con la cámara del celular hace falta HTTPS (Vercel lo da).
 4. **Vercel:** crea un proyecto nuevo con este repositorio y las mismas variables. Instala la app en el celular desde el navegador («Agregar a la pantalla de inicio»).
 
-En el ERP, **MM → Inventario → Ubicaciones de almacén** crea los pasillos y estantes; imprime su código como etiqueta para escanearlo. **MM → Inventario → Inventarios desde RLS Tools** muestra lo contado en el celular y permite aplicarlo.
+En el ERP, **MM → Inventario → Ubicaciones de almacén** crea los pasillos y estantes; imprime su código como etiqueta para escanearlo. **MM → Inventario → Inventarios desde RLS Tools** muestra lo contado en el celular y permite aplicarlo. **Almacén → Transferencias entre Tiendas** y **Almacén → Retornos a Proveedor** muestran lo registrado desde el celular.
 
 ## Estructura
 

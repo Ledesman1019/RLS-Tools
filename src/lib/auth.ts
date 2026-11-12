@@ -3,12 +3,13 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { sectionsFor } from "./menu";
 import { createClient } from "./supabase/server";
 import { hasSupabaseEnv } from "./supabase/env";
 import { hasPermission, type Action, type Branch, type Permissions, type Profile, type Settings } from "./types";
 
-/** Versión del esquema del ERP que necesita RLS Tools (migración 0010_rls_tools.sql). */
-export const REQUIRED_SCHEMA = 10;
+/** Versión del esquema del ERP que necesita RLS Tools (migraciones 0010 y 0011 del ERP). */
+export const REQUIRED_SCHEMA = 11;
 export const BRANCH_COOKIE = "rls_branch";
 
 export type AppContext = {
@@ -42,7 +43,8 @@ export const loadContext = cache(async (): Promise<Loaded> => {
   const { profile, settings } = ctx;
   if (!profile || !profile.active || !settings) return { status: "inactive" };
   const permissions = ctx.permissions ?? {};
-  if (!hasPermission(profile.role, permissions, "inventario", "access")) return { status: "denied" };
+  // Entra quien tenga al menos una herramienta (inventario, ventas, compras…)
+  if (sectionsFor(profile.role, permissions).length === 0) return { status: "denied" };
 
   const branches = ctx.branches ?? [];
   let branchId = profile.branch_id;

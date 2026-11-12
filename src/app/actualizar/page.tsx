@@ -4,7 +4,7 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 
 export const metadata: Metadata = { title: "Falta actualizar el ERP" };
 
-/** RLS Tools necesita la migración 0010 del ERP HANA4 (ubicaciones, conteos y bitácora). */
+/** RLS Tools necesita las migraciones 0010 y 0011 del ERP HANA4. */
 export default function UpdatePage() {
   return (
     <div className="desk-bg flex min-h-dvh items-center justify-center p-4">
@@ -13,8 +13,9 @@ export default function UpdatePage() {
         <h1 className="mt-3 text-lg font-bold">{hasSupabaseEnv ? "Falta actualizar la base del ERP" : "Falta configurar la conexión"}</h1>
         {hasSupabaseEnv ? (
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            RLS Tools usa la misma base de datos del ERP HANA4 y necesita la migración <code className="rounded bg-slate-200 px-1">0010_rls_tools.sql</code> (ubicaciones,
-            inventarios y bitácora móvil). Ejecútala en Supabase → SQL Editor y vuelve a abrir la app.
+            RLS Tools usa la misma base de datos del ERP HANA4 y necesita las migraciones <code className="rounded bg-slate-200 px-1">0010_rls_tools.sql</code> (ubicaciones,
+            inventarios y bitácora móvil) y <code className="rounded bg-slate-200 px-1">0011_transferencias_retornos.sql</code> (transferencias en tránsito y retornos a
+            proveedor). Ejecuta en Supabase → SQL Editor las que falten, en orden, y vuelve a abrir la app.
           </p>
         ) : (
           <p className="mt-2 text-sm leading-relaxed text-slate-600">

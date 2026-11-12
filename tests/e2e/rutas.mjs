@@ -58,33 +58,60 @@ try {
   console.log(`— Base del ERP en el esquema ${schema} —`);
   const a = await login("almacenero");
 
-  if (Number(schema) < 10) {
+  if (Number(schema) < 11) {
     const home = await get(a, "/");
-    report(home.body.includes("NEXT_REDIRECT") && home.body.includes("/actualizar"), "sin la migración 0010 lleva a «Falta actualizar»");
+    report(home.body.includes("NEXT_REDIRECT") && home.body.includes("/actualizar"), "sin las migraciones 0010 y 0011 lleva a «Falta actualizar»");
     const up = await get(a, "/actualizar");
-    report(up.status === 200 && up.body.includes("0010_rls_tools.sql"), "/actualizar explica qué migración falta");
+    report(up.status === 200 && up.body.includes("0011_transferencias_retornos.sql"), "/actualizar explica qué migración falta");
   } else {
     console.log("— Almacenero —");
-    const home = await page(a, "/", ["RLS Tools", "Inventario con pistola", "Inventario físico", "Consulta rápida", "Movimientos de almacén", "Reportes y diferencias", "Sincronización con HANA4"]);
-    report(home.includes("Almacenero"), "barra inferior con el perfil del ERP");
-    await page(a, "/escaneo", ["Inventario con pistola"]);
-    await page(a, "/inventario", ["Inventario físico"]);
-    await page(a, "/consulta", ["Consulta rápida"]);
-    await page(a, "/movimientos", ["Movimientos de almacén"]);
-    await page(a, "/reportes", ["Reportes y diferencias"]);
-    await page(a, "/sincronizacion", ["Sincronización con HANA4"]);
+    const home = await page(a, "/", ["Inventarios", "Transferencias", "Recibos", "Otros", "Configuración", "Cerrar Sesión"]);
+    report(!home.includes(">Ventas<"), "almacenero no ve la sección Ventas");
+    await page(a, "/menu/inventarios", ["Búsqueda de Inventario", "Inventario Físico", "Inventario con Pistola", "Tiendas"]);
+    await page(a, "/menu/transferencias", ["Nueva Transferencia", "Recibir Transferencia"]);
+    await page(a, "/menu/recibos", ["Recibir O/C", "Retorno a Proveedor"]);
+    for (const [path, title] of [
+      ["/escaneo", "Inventario con Pistola"],
+      ["/inventario", "Inventario Físico"],
+      ["/consulta", "Búsqueda de Inventario"],
+      ["/tiendas", "Tiendas"],
+      ["/transferencias/nueva", "Nueva Transferencia"],
+      ["/transferencias/recibir", "Recibir Transferencia"],
+      ["/recibos", "Recibir O/C"],
+      ["/recibos/retorno", "Retorno a Proveedor"],
+      ["/movimientos", "Movimientos de Almacén"],
+      ["/reportes", "Reportes y Diferencias"],
+      ["/sincronizacion", "Sincronización con HANA4"],
+      ["/configuracion", "Configuración"],
+    ])
+      await page(a, path, [title]);
+    await page(a, "/ventas/nueva", ["Tu rol no tiene esta herramienta"], "almacenero no puede vender");
 
-    console.log("— Comprador (solo consulta inventario) —");
+    console.log("— Comprador (autoriza pedidos, consulta inventario) —");
     const b = await login("comprador");
-    const bh = await page(b, "/", ["Consulta rápida", "Reportes y diferencias"]);
-    report(!bh.includes("Inventario con pistola") && !bh.includes("Movimientos de almacén"), "comprador no escanea ni mueve stock");
-    const bm = await page(b, "/movimientos", ["Tu rol no tiene esta herramienta"], "comprador ve aviso en Movimientos");
-    void bm;
+    const bh = await page(b, "/", ["Inventarios", "Ventas"]);
+    report(!bh.includes("Transferencias"), "comprador no transfiere mercadería");
+    await page(b, "/menu/ventas", ["Autorizaciones"]);
+    await page(b, "/autorizaciones", ["Autorizaciones"]);
+    await page(b, "/movimientos", ["Tu rol no tiene esta herramienta"], "comprador ve aviso en Movimientos");
 
-    console.log("— Cajero (sin inventario) —");
+    console.log("— Cajero (vende desde el celular) —");
     const c = await login("cajero");
-    const ch = await get(c, "/");
-    report(ch.body.includes("/sin-acceso"), "cajero no entra a RLS Tools (sin permiso de Inventario)");
+    const ch = await page(c, "/", ["Ventas"]);
+    report(!ch.includes("Inventarios") && !ch.includes("Recibos"), "cajero solo ve Ventas");
+    await page(c, "/menu/ventas", ["Nueva Venta", "Nueva Orden"]);
+    await page(c, "/ventas/nueva", ["Nueva Venta", "Cobrar"]);
+
+    console.log("— Vendedor (órdenes que cobra caja) —");
+    const v = await login("vendedor");
+    await page(v, "/menu/ventas", ["Nueva Orden"]);
+    await page(v, "/ventas/orden", ["Nueva Orden", "Registrar orden"]);
+    await page(v, "/ventas/nueva", ["Tu rol no tiene esta herramienta"], "vendedor no cobra (sin caja)");
+
+    console.log("— Contador (sin herramientas) —");
+    const k = await login("contador");
+    const kh = await get(k, "/");
+    report(kh.body.includes("/sin-acceso"), "contador no entra a RLS Tools");
   }
 
   const lp = await fetch(base + "/login");

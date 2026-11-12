@@ -6,7 +6,7 @@
  *   así que la app sigue contando y registrando movimientos sin conexión.
  * - Al cerrar sesión la app pide borrar todas las copias (mensaje "clear").
  */
-const VERSION = "rls-tools-v2";
+const VERSION = "rls-tools-v3";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 const PRECACHE = ["/offline.html", "/icons/icon-192.png"];

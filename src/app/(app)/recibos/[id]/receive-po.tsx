@@ -163,7 +163,7 @@ export function ReceivePo({ id }: { id: string }) {
               {pendingLines.length} productos aún no se verifican. La orden se recibe completa: si algo no llegó, no la recibas y avisa a Compras.
             </p>
           )}
-          <div className="fixed inset-x-0 bottom-16 z-20 border-t border-slate-200 bg-surface/95 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
+          <div className="fixed inset-x-0 bottom-16 z-20 border-t border-slate-200 bg-surface/95 px-3 py-2 sm:left-1/2 sm:right-auto sm:w-[40rem] sm:-translate-x-1/2 sm:rounded-t-xl sm:border-x pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
             <Button className="h-12 w-full text-base" loading={busy} onClick={() => void receive()}>
               {pendingLines.length ? "Recibir de todos modos" : "Recibir orden completa"}
             </Button>

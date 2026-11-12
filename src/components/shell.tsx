@@ -42,10 +42,18 @@ export function Shell({ children }: { children: ReactNode }) {
       <TopBar back={back} title={title} />
       <main className={cn("relative flex-1 overflow-hidden", isMenu ? "desk-bg" : "bg-app")}>
         {isMenu && (
-          // Marca de agua del engranaje, como en las terminales de almacén
-          <Settings aria-hidden className="pointer-events-none absolute -bottom-10 -right-12 h-72 w-72 text-sky-300/25" strokeWidth={1.4} />
+          // Marca de agua, igual que el escritorio del ERP
+          <div aria-hidden className="pointer-events-none absolute bottom-5 right-6 flex items-center gap-3 opacity-95 sm:bottom-8 sm:right-10">
+            <BrandMark className="h-12 w-12 rounded-2xl p-1 sm:h-16 sm:w-16" />
+            <div className="leading-none text-white">
+              <p className="text-3xl font-extrabold tracking-tight sm:text-5xl">
+                rls<span className="text-sky-300">tools</span>
+              </p>
+              <p className="mt-1 text-xs font-semibold tracking-wide text-white/80 sm:text-sm">almacén móvil · hana4</p>
+            </div>
+          </div>
         )}
-        <div className="relative px-3 pb-6 pt-3">
+        <div className={cn("relative px-3 pt-3", isMenu ? "pb-32 sm:px-8" : "mx-auto w-full max-w-[40rem] pb-6 sm:pt-5")}>
           {allowed ? (
             children
           ) : (
@@ -126,13 +134,13 @@ function BottomBar() {
   }
 
   return (
-    <footer className="sticky bottom-0 z-30 grid grid-cols-2 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] text-slate-700 shadow-[0_-2px_10px_rgb(0_0_0/0.15)]">
-      <Link href="/configuracion" className="flex h-16 flex-col items-center justify-center gap-0.5 active:bg-slate-100">
-        <Settings className="h-6 w-6 text-sky-600" />
+    <footer className="sticky bottom-0 z-30 grid grid-cols-2 bg-taskbar pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-2px_10px_rgb(0_0_0/0.25)] sm:flex sm:justify-center sm:gap-4">
+      <Link href="/configuracion" className="flex h-16 flex-col items-center justify-center gap-0.5 active:bg-white/10 sm:w-44 sm:rounded-md sm:hover:bg-white/10">
+        <Settings className="h-6 w-6 text-sky-300" />
         <span className="text-sm">Configuración</span>
       </Link>
-      <button type="button" disabled={pending} onClick={signOutHere} className="flex h-16 cursor-pointer flex-col items-center justify-center gap-0.5 active:bg-slate-100 disabled:opacity-60">
-        {pending ? <RefreshCw className="h-6 w-6 animate-spin text-rose-600" /> : <LogOut className="h-6 w-6 text-rose-600" />}
+      <button type="button" disabled={pending} onClick={signOutHere} className="flex h-16 cursor-pointer flex-col items-center justify-center gap-0.5 active:bg-white/10 disabled:opacity-60 sm:w-44 sm:rounded-md sm:hover:bg-white/10">
+        {pending ? <RefreshCw className="h-6 w-6 animate-spin text-rose-300" /> : <LogOut className="h-6 w-6 text-rose-300" />}
         <span className="text-sm">{pending ? "Cerrando…" : "Cerrar Sesión"}</span>
       </button>
     </footer>

@@ -175,7 +175,7 @@ export function SaleTool({ mode }: { mode: "venta" | "orden" }) {
         )}
       </Card>
 
-      <div className="fixed inset-x-0 bottom-16 z-20 border-t border-slate-200 bg-surface/95 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
+      <div className="fixed inset-x-0 bottom-16 z-20 border-t border-slate-200 bg-surface/95 px-3 py-2 sm:left-1/2 sm:right-auto sm:w-[40rem] sm:-translate-x-1/2 sm:rounded-t-xl sm:border-x pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
         <Button className={cn("h-12 w-full text-base")} loading={pending} onClick={submit}>
           {mode === "venta" ? "Cobrar" : "Registrar orden"} · {money(total)}
         </Button>

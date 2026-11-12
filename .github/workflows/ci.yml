@@ -1,0 +1,47 @@
+# Integración continua de RLS Tools: lint, tipos, reglas de la cola y build
+# en cada push y pull request a main.
+# No usa credenciales.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Lint, tipos, cola offline y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Valores ficticios: el build no se conecta a Supabase.
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint y fronteras de módulos
+        run: npm run lint
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Reglas de la cola offline
+        run: npm test
+
+      - name: Build de producción
+        run: npm run build

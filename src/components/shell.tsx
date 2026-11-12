@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useSyncExternalStore, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Cloud, CloudOff, Lock, LogOut, Power, RefreshCw, Settings, UserRound } from "lucide-react";
-import { logout, signOut } from "@/app/actions";
+import { ArrowLeft, Cloud, CloudOff, Lock, LogOut, RefreshCw, Settings, UserRound } from "lucide-react";
+import { logout } from "@/app/actions";
 import { useApp } from "@/components/app-provider";
 import { BrandMark } from "@/components/brand";
-import { Dialog } from "@/components/dialog";
 import { NotificationBell, NotificationWatcher } from "@/components/notifications";
-import { Button } from "@/components/ui";
-import { exitApp } from "@/lib/exit";
 import { canUse, locate } from "@/lib/menu";
 import { useSync } from "@/lib/offline/hooks";
 import { clearAll } from "@/lib/offline/store";
@@ -115,14 +112,18 @@ function TopBar({ back, title }: { back: string | null; title?: string }) {
 
 function BottomBar() {
   const sync = useSync();
-  const [open, setOpen] = useState(false);
+  const [pending, start] = useTransition();
 
-  async function forget() {
-    // Seguridad: no queda nada de la empresa guardado en el celular
-    await clearAll().catch(() => {});
-    navigator.serviceWorker?.controller?.postMessage("clear");
+  // Cerrar sesión: vuelve al login. Salir de la aplicación solo se ofrece en el login.
+  function signOutHere() {
+    if (sync.pending > 0 && !confirm(`Tienes ${sync.pending} operaciones sin enviar al ERP. Si cierras sesión se perderán. ¿Cerrar sesión de todas formas?`)) return;
+    start(async () => {
+      // Seguridad: no queda nada de la empresa guardado en el celular
+      await clearAll().catch(() => {});
+      navigator.serviceWorker?.controller?.postMessage("clear");
+      await logout();
+    });
   }
-  const confirmLoss = () => sync.pending === 0 || confirm("Hay operaciones sin enviar al ERP. ¿Salir de todas formas y descartarlas?");
 
   return (
     <footer className="sticky bottom-0 z-30 grid grid-cols-2 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] text-slate-700 shadow-[0_-2px_10px_rgb(0_0_0/0.15)]">
@@ -130,46 +131,10 @@ function BottomBar() {
         <Settings className="h-6 w-6 text-sky-600" />
         <span className="text-sm">Configuración</span>
       </Link>
-      <button type="button" onClick={() => setOpen(true)} className="flex h-16 cursor-pointer flex-col items-center justify-center gap-0.5 active:bg-slate-100">
-        <LogOut className="h-6 w-6 text-rose-600" />
-        <span className="text-sm">Cerrar Sesión</span>
+      <button type="button" disabled={pending} onClick={signOutHere} className="flex h-16 cursor-pointer flex-col items-center justify-center gap-0.5 active:bg-slate-100 disabled:opacity-60">
+        {pending ? <RefreshCw className="h-6 w-6 animate-spin text-rose-600" /> : <LogOut className="h-6 w-6 text-rose-600" />}
+        <span className="text-sm">{pending ? "Cerrando…" : "Cerrar Sesión"}</span>
       </button>
-
-      <Dialog open={open} onClose={() => setOpen(false)} title="Cerrar sesión" size="sm">
-        {sync.pending > 0 && (
-          <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Tienes {sync.pending} operaciones sin enviar al ERP. Si sales ahora se perderán: sincroniza primero.
-          </p>
-        )}
-        <div className="grid gap-2">
-          <form
-            action={logout}
-            onSubmit={async (e) => {
-              if (!confirmLoss()) return e.preventDefault();
-              await forget();
-            }}
-          >
-            <Button type="submit" variant="secondary" className="h-12 w-full">
-              <LogOut className="h-4 w-4" /> Cerrar sesión (cambiar de usuario)
-            </Button>
-          </form>
-          <Button
-            variant="danger"
-            className="h-12 w-full"
-            onClick={async () => {
-              if (!confirmLoss()) return;
-              await forget();
-              await signOut();
-              exitApp();
-            }}
-          >
-            <Power className="h-4 w-4" /> Salir de la aplicación
-          </Button>
-          <Button variant="ghost" className="h-11 w-full" onClick={() => setOpen(false)}>
-            Volver
-          </Button>
-        </div>
-      </Dialog>
     </footer>
   );
 }

@@ -67,6 +67,7 @@ try {
     console.log("— Almacenero —");
     const home = await page(a, "/", ["Inventarios", "Transferencias", "Recibos", "Otros", "Configuración", "Cerrar Sesión"]);
     report(!home.includes(">Ventas<"), "almacenero no ve la sección Ventas");
+    report(!home.includes("Salir de la aplicación"), "con sesión iniciada solo se ofrece Cerrar Sesión");
     await page(a, "/menu/inventarios", ["Búsqueda de Inventario", "Inventario Físico", "Inventario con Pistola", "Tiendas"]);
     await page(a, "/menu/transferencias", ["Nueva Transferencia", "Recibir Transferencia"]);
     await page(a, "/menu/recibos", ["Recibir O/C", "Retorno a Proveedor"]);

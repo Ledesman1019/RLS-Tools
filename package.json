@@ -10,7 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node tests/unit/cola.test.mjs",
     "check": "npm run lint && npm run typecheck && npm test",
-    "test:e2e": "node tests/e2e/rutas.mjs"
+    "test:e2e": "node tests/e2e/rutas.mjs && node tests/e2e/interfaz.mjs"
   },
   "engines": {
     "node": ">=20.9"

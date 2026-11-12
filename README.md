@@ -50,6 +50,6 @@ public/sw.js          Service worker: pantallas disponibles sin señal
 | Comando | Qué verifica |
 |---|---|
 | `npm run check` | Lint, tipos y las reglas de la cola (orden, reintentos y clasificación de errores) |
-| `npm run test:e2e -- <url>` | Recorrido con usuarios temporales de varios roles: qué herramientas ve cada uno. Usa la clave de servicio del `.env.local` del ERP y borra los usuarios al terminar |
+| `npm run test:e2e -- <url>` | Recorrido con usuarios temporales de varios roles (qué herramientas ve cada uno) y flujo real en el navegador: abrir inventario, escanear, enviar sin duplicar y anular. Usa la clave de servicio del `.env.local` del ERP y borra todo al terminar |
 
 Las reglas de negocio de la base de datos (conteo, cierre, aplicación por diferencia, idempotencia y permisos) se prueban en la suite del ERP: `erp/tests/db/reglas-negocio.test.mjs`.

@@ -39,7 +39,7 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-taskbar">
       <NotificationWatcher />
-      <TopBar back={back} title={title} />
+      <TopBar />
       <main className={cn("relative flex-1 overflow-hidden", isMenu ? "desk-bg" : "bg-app")}>
         {isMenu && (
           // Marca de agua, igual que el escritorio del ERP
@@ -53,6 +53,7 @@ export function Shell({ children }: { children: ReactNode }) {
             </div>
           </div>
         )}
+        {back && <BackBar href={back} title={title} onDesk={isMenu} />}
         <div className={cn("relative px-3 pt-3", isMenu ? "pb-32 sm:px-8" : "mx-auto w-full max-w-[40rem] pb-6 sm:pt-5")}>
           {allowed ? (
             children
@@ -70,7 +71,28 @@ export function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-function TopBar({ back, title }: { back: string | null; title?: string }) {
+/** «Atrás» igual que en el ERP: botón con borde sobre el escritorio, o claro sobre las pantallas de trabajo. */
+function BackBar({ href, title, onDesk }: { href: string; title?: string; onDesk: boolean }) {
+  return (
+    <div className={cn("relative flex items-center gap-3 px-3 pt-3", onDesk ? "sm:px-8 sm:pt-5" : "mx-auto w-full max-w-[40rem] sm:pt-4")}>
+      <Link
+        href={href}
+        className={cn(
+          "inline-flex shrink-0 items-center gap-2 font-semibold transition-colors",
+          onDesk
+            ? "h-10 rounded-[3px] border-[1.5px] border-white/75 bg-white/10 pl-3 pr-4 text-sm text-white hover:bg-white/20 active:bg-white/25"
+            : "h-9 rounded-md border border-slate-300 bg-surface pl-2.5 pr-3.5 text-sm text-slate-700 shadow-xs hover:border-brand-500 hover:text-link",
+        )}
+      >
+        <ArrowLeft className={onDesk ? "h-[18px] w-[18px]" : "h-4 w-4"} />
+        Atrás
+      </Link>
+      {title && <span className={cn("min-w-0 truncate text-sm font-bold", onDesk ? "text-white" : "text-slate-800")}>{title}</span>}
+    </div>
+  );
+}
+
+function TopBar() {
   const { profile } = useApp();
   const sync = useSync();
   const terminal = useSyncExternalStore(
@@ -82,19 +104,12 @@ function TopBar({ back, title }: { back: string | null; title?: string }) {
 
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-taskbar px-2 pt-[env(safe-area-inset-top)] text-white shadow-md">
-      {back ? (
-        <Link href={back} aria-label="Atrás" className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md pr-2 active:bg-white/10">
-          <ArrowLeft className="h-6 w-6 shrink-0" />
-          <span className="truncate text-[15px] font-bold">{title ?? "Atrás"}</span>
-        </Link>
-      ) : (
-        <div className="flex min-w-0 flex-1 items-center gap-2 pl-1">
-          <BrandMark className="h-9 w-9 rounded-lg" />
-          <span className="truncate text-[15px] font-black tracking-tight">
-            RLS<span className="text-sky-300">Tools</span>
-          </span>
-        </div>
-      )}
+      <Link href="/" className="flex min-w-0 flex-1 items-center gap-2 pl-1">
+        <BrandMark className="h-9 w-9 rounded-lg" />
+        <span className="truncate text-[15px] font-black tracking-tight">
+          RLS<span className="text-sky-300">Tools</span>
+        </span>
+      </Link>
       <Link
         href="/sincronizacion"
         aria-label={!sync.online ? "Sin señal" : `${sync.pending} operaciones por enviar`}

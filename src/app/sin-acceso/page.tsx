@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Sin acceso" };
 export default function NoAccessPage({ searchParams }: PageProps<"/sin-acceso">) {
   return (
     <div className="desk-bg flex min-h-dvh items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-[4px] border border-white/70 bg-[#f3f5f8] p-5 text-slate-800 shadow-2xl">
+      <div className="force-light w-full max-w-md rounded-[4px] border border-white/70 bg-[#f3f5f8] p-5 text-slate-800 shadow-2xl">
         <Lock className="h-10 w-10 text-slate-500" />
         <Suspense fallback={<h1 className="mt-3 text-lg font-bold">Sin acceso</h1>}>
           <Reason searchParams={searchParams} />

@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Falta actualizar el ERP" };
 export default function UpdatePage() {
   return (
     <div className="desk-bg flex min-h-dvh items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-[4px] border border-white/70 bg-[#f3f5f8] p-5 text-slate-800 shadow-2xl">
+      <div className="force-light w-full max-w-md rounded-[4px] border border-white/70 bg-[#f3f5f8] p-5 text-slate-800 shadow-2xl">
         <DatabaseZap className="h-10 w-10 text-brand-600" />
         <h1 className="mt-3 text-lg font-bold">{hasSupabaseEnv ? "Falta actualizar la base del ERP" : "Falta configurar la conexión"}</h1>
         {hasSupabaseEnv ? (
